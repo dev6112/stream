@@ -7,7 +7,7 @@ import os
 import streamlit as st
 
 st.set_page_config(
-    page_title="Image compression",
+    page_title="Team 6 Image compression",
     page_icon="👋",
 )
 
@@ -41,6 +41,6 @@ with col3:
 
 st.markdown("""
     ## Code, explanations and more:
-    You can find code and notebooks explaining the way the algorithms work on [Github](https://github.com/Manik2000/unsupervised-ml-image-compression).
+    You can find code and notebooks explaining the way the algorithms work on [Github](https://github.com/dev6112/team6urce).
 """
 )
