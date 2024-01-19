@@ -13,6 +13,12 @@ class PCACompressor:
         self.size = image_array.shape
         self.pca = PCA()
         self.output_image_array = None
+        self.original_info = {
+            "Height": self.size[0],
+            "Width": self.size[1],
+            "Resolution": f"{self.size[0]} x {self.size[1]}",
+        }
+        self.compressed_info = None
 
     @staticmethod
     def _compress_channel(pca: PCA, array: np.ndarray):
@@ -25,7 +31,7 @@ class PCACompressor:
         pca.fit(array)
         n_dimensional = pca.transform(array)
         return pca.inverse_transform(n_dimensional)
-    
+
     @staticmethod
     def _choose_n(n: int, size: tuple):
         """
@@ -43,7 +49,7 @@ class PCACompressor:
                 n = min(a, b)
         return n
 
-    def compress(self, n_components: int=200) -> np.ndarray:
+    def compress(self, n_components: int = 500) -> np.ndarray:
         """
         Compress the image using PCA
         :param n_components: number of components to use (int)
@@ -57,4 +63,19 @@ class PCACompressor:
             for i in range(3):
                 colors.append(self._compress_channel(self.pca, self.image_array[:, :, i]))
             self.output_image_array = np.dstack((colors[0], colors[1], colors[2]))
+
+        self.compressed_info = {
+            "Height": self.output_image_array.shape[0],
+            "Width": self.output_image_array.shape[1],
+            "Resolution": f"{self.output_image_array.shape[0]} x {self.output_image_array.shape[1]}",
+        }
+
         return self.output_image_array
+
+    def get_original_info(self):
+        """Return information about the original image"""
+        return self.original_info
+
+    def get_compressed_info(self):
+        """Return information about the compressed image"""
+        return self.compressed_info

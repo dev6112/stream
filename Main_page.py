@@ -33,14 +33,11 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.image(os.path.join("images", "drops.jpg"), caption="Original image")
 
-with col2:
-    st.image(os.path.join("images", "k_10.png"), caption="Compressed image with 10 color clusters")
-
 with col3:
     st.image(os.path.join("images", "k_50.png"), caption="Compressed image with 50 color clusters")
 
 st.markdown("""
     ## Code, explanations and more:
-    You can find code and notebooks explaining the way the algorithms work on [Github](https://github.com/dev6112/team6urce).
+    You can find code and notebooks explaining the way the algorithms work on [Github](https://github.com/dev6112/stream.git).
 """
 )

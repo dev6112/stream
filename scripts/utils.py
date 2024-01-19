@@ -29,3 +29,8 @@ def load_array_into_image(array: np.ndarray) -> Image:
     :return: image (PIL Image)
     """
     return Image.fromarray(array.astype('uint8'))
+
+
+def resize_image(image, size):
+    """Resize an image to the specified size."""
+    return image.resize(size)

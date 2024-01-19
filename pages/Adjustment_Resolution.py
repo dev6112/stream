@@ -4,7 +4,6 @@ from PIL import Image, ImageDraw
 from reportlab.pdfgen import canvas
 from scripts.pca_compression import PCACompressor
 from scripts.utils import *
-import base64
 
 A4 = (210, 297)  # Width x Height in millimeters
 
@@ -39,15 +38,9 @@ def convert_to_pdf(image, initial_file_name, adjusted_width_input, adjusted_heig
         key="download_button_pdf"
     )
 
-# Function to convert image to base64 encoding
-def image_to_base64(image):
-    buffered = BytesIO()
-    image.save(buffered, format="PNG")
-    return base64.b64encode(buffered.getvalue()).decode()
-
 st.set_page_config(page_title="PCA", page_icon=":fire:")
 
-st.markdown("# PCA compression")
+st.markdown("# Adjust the Resolution")
 st.sidebar.header("Instructions")
 st.sidebar.markdown(
     """
@@ -106,11 +99,23 @@ if uploaded_image is not None:
 
             # Additional inputs for selecting resolution preset in col3
             with col3:
-                st.write("Manually Adjust Height and Width:")
-                adjusted_height_input = st.number_input("Enter Adjusted Height (pixels):", value=compressed_info['Height'])
-                adjusted_width_input = st.number_input("Enter Adjusted Width (pixels):", value=compressed_info['Width'])
+                resolution_presets = {
+                    "144p": (256, 144),
+                    "240p": (426, 240),
+                    "360p": (640, 360),
+                    "480p": (854, 480),
+                    "720p": (1280, 720),
+                    "1080p": (1920, 1080),
+                    "2k": (2560, 1440),
+                    "4k": (3840, 2160),
+                }
 
-                # Calculate adjusted resolution
+                selected_resolution = st.selectbox("Select Resolution Preset", list(resolution_presets.keys()))
+
+                # Get selected resolution dimensions
+                adjusted_width_input, adjusted_height_input = resolution_presets[selected_resolution]
+
+                # Adjusting height and width
                 adjusted_resolution_input = adjusted_height_input * adjusted_width_input
 
                 st.write(f"Adjusted Compressed Height: {adjusted_height_input:.2f} pixels")
@@ -118,29 +123,26 @@ if uploaded_image is not None:
                 st.write(f"Adjusted Compressed Resolution: {adjusted_resolution_input:.2f} pixels")
 
                 # Resize the compressed image with adjusted height and width
-                compressed_image_resized_manual = resize_image(compressed_image, (int(adjusted_width_input), int(adjusted_height_input)))
-                
-                # Center the image on the web page using custom CSS
-                st.image(compressed_image_resized_manual, caption="Manually Adjusted Compressed image", use_column_width=True)
-
+                compressed_image_resized = resize_image(compressed_image, (adjusted_width_input, adjusted_height_input))
+                st.image(compressed_image_resized, caption="Adjusted Compressed image")
 
                 compressed_info['Height'] = adjusted_height_input
                 compressed_info['Width'] = adjusted_width_input
                 compressed_info['Resolution'] = adjusted_resolution_input
 
-                # Displaying sizes (similar to your existing code)
+                # Displaying sizes
                 original_size_bytes = len(uploaded_image.read())
                 original_size_kb = original_size_bytes / 1024  # Convert to KB
 
-                buffer_manual = BytesIO()
+                buffer = BytesIO()
 
                 # Convert quality to int
                 quality = int(quality_input)
 
                 quality = max(1, min(quality, 95))  # Ensure quality is within a valid range
 
-                compressed_image_resized_manual.save(buffer_manual, format="JPEG", quality=quality)
-                compressed_size_bytes = len(buffer_manual.getvalue())
+                compressed_image_resized.save(buffer, format="JPEG", quality=quality)
+                compressed_size_bytes = len(buffer.getvalue())
                 compressed_size_kb = compressed_size_bytes / 1024  # Convert to KB
 
                 st.write(f"Original Size: {original_size_kb:.2f} KB")
@@ -148,17 +150,18 @@ if uploaded_image is not None:
 
                 initial_file_name = uploaded_image.name.split(".")[0]
 
-                # Download button for manually adjusted compressed image
+                # Add logic for downloading adjusted compressed image
+                download_button_label = f"Download adjusted compressed image ({compressed_info['Height']}x{adjusted_width_input})"
                 st.download_button(
-                    f"Download manually adjusted compressed image ({compressed_info['Height']}x{adjusted_width_input})",
-                    data=buffer_manual.getvalue(),
-                    file_name=f"{initial_file_name}_pca_compressed_manual.jpg",
-                    key="download_button_manual"
+                    download_button_label,
+                    data=buffer.getvalue(),
+                    file_name=f"{initial_file_name}_pca_compressed_adjusted.jpg",
+                    key="download_button_adjusted"
                 )
 
-                # Convert button for manually adjusted compressed image to PDF
-                pdf_button_manual_label = f"Convert manually adjusted compressed image to PDF"
-                st.button(pdf_button_manual_label, on_click=convert_to_pdf, args=(compressed_image_resized_manual, initial_file_name, adjusted_width_input, adjusted_height_input))
+                # Add logic for converting adjusted compressed image to PDF
+                pdf_button_label = f"Convert adjusted compressed image to PDF"
+                st.button(pdf_button_label, on_click=convert_to_pdf, args=(compressed_image_resized, initial_file_name, adjusted_width_input, adjusted_height_input))
 
     else:
         st.write("Please upload an image first.")
